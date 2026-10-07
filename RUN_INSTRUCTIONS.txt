@@ -1,0 +1,77 @@
+SECUREVOTE - COMMANDS TO INSTALL AND RUN (WINDOWS / POWERSHELL)
+===============================================================
+
+Before you start
+----------------
+- Install Python 3.10 or newer.
+- Install Node.js (npm is included with Node.js).
+- Open PowerShell in the project folder: D:\BLC proj
+
+FIRST-TIME SETUP
+----------------
+Run these commands in PowerShell from the project folder:
+
+  py -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  python -m pip install -r requirements.txt
+
+If PowerShell blocks activation, run this once in that PowerShell window,
+then activate the virtual environment again:
+
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+  .\.venv\Scripts\Activate.ps1
+
+START THE PROJECT
+-----------------
+You need three PowerShell windows. Keep each running window open.
+
+WINDOW 1 - Start Ganache
+1. Open PowerShell in the project folder.
+2. Run:
+
+  npx ganache --server.host 127.0.0.1 --server.port 7545 --chain.chainId 1337
+
+3. If asked to install Ganache, type y and press Enter.
+4. Wait until Ganache reports that it is listening. Leave this window open.
+
+WINDOW 2 - Deploy the Solidity voting contract
+1. Open another PowerShell in the project folder.
+2. Run:
+
+  .\.venv\Scripts\Activate.ps1
+  python deploy.py
+
+3. The first deployment downloads Solidity compiler 0.8.20. Wait for the
+   success message showing the contract address. Leave the Ganache window open.
+
+WINDOW 3 - Start the Flask website
+1. Open a third PowerShell in the project folder.
+2. Run:
+
+  .\.venv\Scripts\Activate.ps1
+  python app.py
+
+3. Open this address in your browser:
+
+  http://127.0.0.1:5000
+
+HOW TO DEMO
+-----------
+1. Confirm the page says it is connected to Ganache.
+2. Select a Ganache account and a candidate, then submit the vote.
+3. The page shows the mined block and transaction hash, and updates results.
+4. Try voting again with the same account. The contract rejects a second vote.
+5. Open these endpoints to show blockchain details and results:
+
+  http://127.0.0.1:5000/chain_info
+  http://127.0.0.1:5000/results
+
+IMPORTANT
+---------
+- Start Ganache before running deploy.py or submitting votes.
+- If Ganache is reset/restarted with a fresh chain, run `python deploy.py`
+  again before using the website. The deployment address is stored in
+  deployment.json.
+- Stop a running command with Ctrl+C in its PowerShell window.
+- If `npx` is not recognized, install Node.js and reopen PowerShell.
+- This is a local educational demo, not a real election system.

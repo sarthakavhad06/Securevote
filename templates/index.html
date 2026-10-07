@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SecureVote — Blockchain Voting</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body><main class="shell">
+  <header class="hero"><div class="brand-mark">♢</div><h1>Secure<span>Vote</span></h1><p>Blockchain-Powered Democratic Voting</p><div class="connection"><i class="{{ 'live' if connected else 'offline' }}"></i>{{ 'Connected to Ganache Network' if connected else 'Ganache network unavailable' }}</div></header>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="alerts">{% for category,message in messages %}<div class="alert {{ category }}"><span>{{ '✓' if category=='success' else '!' }}</span>{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+  {% if not deployed %}<div class="setup-alert"><strong>Smart contract unavailable</strong><span>{{ status }} {% if connected %}Deploy the contract with <code>python deploy.py</code>.{% endif %}</span></div>{% endif %}
+  <section class="vote-card panel"><div class="section-title"><div class="title-icon">▤</div><h2>Cast Your Vote</h2><span class="chip">{{ 'ELECTION OPEN' if deployed else 'SETUP REQUIRED' }}</span></div>
+    <form method="post" action="/vote"><label for="account">Voter wallet address</label><div class="select-wrap"><select id="account" name="account" required {% if not accounts or not deployed %}disabled{% endif %}><option value="" disabled selected>{% if accounts %}Select your Ganache account{% else %}No Ganache accounts detected{% endif %}</option>{% for account in accounts %}<option value="{{ account }}">{{ account }}</option>{% endfor %}</select><span>⌄</span></div>
+    <label for="candidate">Candidate selection</label><div class="select-wrap"><select id="candidate" name="candidate_id" required {% if not candidates or not deployed %}disabled{% endif %}><option value="" disabled selected>Choose your candidate</option>{% for candidate in candidates %}<option value="{{ loop.index0 }}">{{ candidate }}</option>{% endfor %}</select><span>⌄</span></div>
+    <button class="primary" {% if not deployed %}disabled{% endif %}><span>✓</span> Submit Vote to Blockchain</button></form>
+  </section>
+  <a class="results-link" href="#results"><span>▥</span> View Live Election Results <b>↓</b></a>
+  <div class="trust-line">Secured by Ethereum Smart Contracts <i>•</i> Transparent <i>•</i> Immutable</div>
+  <section class="panel results-panel" id="results"><div class="section-title"><div><div class="kicker">LIVE FROM THE SMART CONTRACT</div><h2>Election results</h2></div><span class="chip">{{ results.values()|sum }} VOTES</span></div>
+    {% if results %}{% set total = results.values()|sum %}{% for name,count in results.items() %}<div class="result-row"><div class="result-label"><span>{{ name }}</span><b>{{ count }} <small>votes</small></b></div><div class="bar"><i style="width:{{ (count / total * 100) if total else 0 }}%"></i></div></div>{% endfor %}{% else %}<p class="empty">Connect Ganache and deploy the contract to read the election tally.</p>{% endif %}
+  </section>
+  <section class="panel chain-panel"><div class="section-title"><div><div class="kicker">NETWORK STATUS</div><h2>Blockchain information</h2></div><a class="json-link" href="/chain_info" target="_blank">JSON ↗</a></div>
+    <div class="stats"><div><small>NETWORK</small><b>{{ 'Ganache' if connected else 'Offline' }}</b></div><div><small>CHAIN ID</small><b>{{ chain_id if chain_id is defined else '—' }}</b></div><div><small>LATEST BLOCK</small><b>{{ latest.number if latest else '—' }}</b></div><div><small>ACCOUNTS</small><b>{{ accounts|length }}</b></div></div>
+    {% if latest %}<div class="contract-address"><small>CONTRACT ADDRESS</small><code>{{ contract_address if contract_address is defined else 'Deployed contract connected' }}</code></div>{% endif %}
+  </section>
+  <section class="ledger"><div class="ledger-head"><div><div class="kicker">CONFIRMED TRANSACTIONS</div><h2>Recent votes</h2></div><span class="chip">{{ events|length }} RECORDS</span></div>
+    {% if events %}{% for event in events|reverse %}<article class="event"><div class="event-icon">✓</div><div class="event-body"><div><b>{{ event.candidate }}</b><span>Vote confirmed · Block #{{ event.block }}</span></div><code>{{ event.tx[:18] }}…</code><small>Voter {{ event.voter[:10] }}… · {{ event.timestamp|datetime }}</small></div></article>{% endfor %}{% else %}<div class="empty-ledger">No votes have been confirmed yet.</div>{% endif %}
+  </section>
+  <footer>COLLEGE MINI PROJECT <i>·</i> LOCAL GANACHE TEST NETWORK<br><small>Educational prototype only — not suitable for real elections.</small></footer>
+</main><script>document.querySelectorAll('.select-wrap select').forEach(s=>s.addEventListener('change',()=>s.parentElement.classList.add('chosen')))</script></body></html>
