@@ -26,13 +26,13 @@ def main():
     factory = w3.eth.contract(abi=interface["abi"], bytecode=interface["bin"])
     tx_hash = factory.constructor(CANDIDATES).transact({"from": account})
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
-    if receipt.status != 1 or not receipt.contractAddress:
+    if receipt["status"] != 1 or not receipt["contractAddress"]:
         raise SystemExit("Contract deployment failed.")
-    config = {"address": receipt.contractAddress, "abi": interface["abi"], "chain_id": w3.eth.chain_id, "deployment_tx": tx_hash.hex(), "candidates": CANDIDATES}
+    config = {"address": receipt["contractAddress"], "abi": interface["abi"], "chain_id": w3.eth.chain_id, "deployment_tx": tx_hash.hex(), "candidates": CANDIDATES}
     (ROOT / "deployment.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
-    print(f"Voting contract deployed: {receipt.contractAddress}")
+    print(f"Voting contract deployed: {receipt['contractAddress']}")
     print(f"Deployment transaction: {tx_hash.hex()}")
-    print(f"Chain ID: {w3.eth.chain_id} | Block: {receipt.blockNumber}")
+    print(f"Chain ID: {w3.eth.chain_id} | Block: {receipt['blockNumber']}")
 
 
 if __name__ == "__main__":
